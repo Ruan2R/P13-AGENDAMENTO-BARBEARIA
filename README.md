@@ -1,102 +1,155 @@
-# P13 — Boss67 Agendamento
+<h1 align="center">💈 Agendamento Online — Boss67 Barbearia</h1>
 
-Produto em desenvolvimento para transformar o agendamento da Boss67 Barbearia em uma experiência simples para o cliente e em uma rotina organizada para a equipe.
+<p align="center">
+Sistema de agendamento desenvolvido como projeto de portfólio e protótipo de produto real, com foco em <strong>experiência do usuário, desenvolvimento full stack, responsividade e gestão de agenda</strong>.
+</p>
 
-## V0.9 — Acesso administrativo + configuração
+---
 
-A V0.9 adiciona autenticação por sessão para a área administrativa e transforma o painel em uma central de configuração do negócio.
+## 🚀 Preview
 
-## V0.10 — Mobile + SEO
+<p align="center">
 
-A V0.10 refina a experiência mobile e adiciona a base de SEO local da página pública.
+<img src="https://raw.githubusercontent.com/Ruan2R/P13-AGENDAMENTO-BARBEARIA/main/assets/og-boss67.jpg" alt="Boss67 Barbearia — Agendamento Online" width="800"/>
 
-### Ajustes da V0.10
+</p>
 
-- Layout mobile refinado para telas estreitas, com espaçamentos e controles mais confortáveis para toque.
-- Informações públicas da Boss67 enriquecidas com localização e Instagram.
-- Título e descrição direcionados a buscas locais em Sidrolândia.
-- Open Graph e Twitter Card.
-- Dados estruturados `HealthAndBeautyBusiness` com endereço, Instagram e horário de funcionamento.
-- `login.html` e `admin.html` marcados como `noindex, nofollow, noarchive`.
-- Favicon, Apple Touch Icon e imagem para compartilhamento social.
-- Mensagem de conexão da API mais clara para o ambiente local.
+---
 
-### Fluxo do cliente
+## 🛠️ Tecnologias utilizadas
 
-1. Serviço
-2. Profissional
-3. Data e horário
-4. Nome + WhatsApp
-5. Revisão
-6. Confirmação
+- HTML5
+- CSS3
+- JavaScript
+- Node.js
+- SQLite
+- API REST
+- Git / GitHub
 
-### O que existe agora
+---
 
-- Frontend vanilla (HTML, CSS e JavaScript).
-- API REST local em Node.js.
-- SQLite para serviços, profissionais, horários, bloqueios e agendamentos.
-- Disponibilidade calculada pelo backend por serviço, profissional e data.
-- Regra de duração do serviço e horário de funcionamento.
-- Bloqueios por profissional.
-- Validação no momento da reserva para impedir conflito de horários.
-- `Sem preferência` escolhe um profissional realmente disponível.
-- Reserva persistente no banco SQLite.
-- Tela de confirmação com link de WhatsApp e geração de evento `.ics`.
+## 📚 O que foi aplicado
 
-## Área administrativa
+Durante este projeto foram praticados conceitos importantes de desenvolvimento front-end e back-end, como:
 
-Acesse em:
+- Estruturação semântica com HTML5
+- CSS responsivo para desktop, tablet e mobile
+- Flexbox e CSS Grid
+- Manipulação da DOM
+- Eventos com `addEventListener`
+- Controle de estado da aplicação
+- Renderização dinâmica de dados
+- Consumo de API REST com `fetch`
+- Criação de API com Node.js
+- Persistência de dados com SQLite
+- Validação de disponibilidade no backend
+- Regras de duração e horário de funcionamento
+- Controle de conflitos entre agendamentos
+- Autenticação administrativa com sessão via cookie `HttpOnly`
+- Organização de dados e regras de negócio
+- SEO local e dados estruturados
+- Open Graph e metadados para compartilhamento
 
-```text
-http://localhost:3000/admin.html
-```
+---
 
-Sem sessão ativa, o sistema encaminha para:
+## 🎯 Sobre o projeto
 
-```text
-http://localhost:3000/login.html
-```
+O projeto nasceu a partir da observação de um sistema de agendamento utilizado por uma barbearia real.
 
-O painel permite:
+A proposta é substituir uma experiência de agendamento pouco intuitiva por uma interface mais simples, rápida e alinhada à identidade visual da Boss67.
 
-- consultar a agenda por data;
-- filtrar por profissional e status;
-- visualizar clientes, serviços, horários e faturamento do dia;
-- cancelar agendamentos;
-- criar e remover bloqueios;
-- cadastrar e editar serviços;
-- ativar/desativar serviços;
-- cadastrar e editar profissionais;
-- ativar/desativar profissionais;
-- configurar o horário de funcionamento de cada dia da semana;
-- encerrar a sessão administrativa.
+Além da experiência do cliente, o projeto foi estruturado para evoluir para uma solução completa, com:
 
-### Autenticação
+- agendamento online;
+- controle de disponibilidade;
+- painel administrativo;
+- gerenciamento de serviços;
+- gerenciamento de profissionais;
+- configuração de horários;
+- bloqueios de agenda;
+- histórico e controle de agendamentos.
 
-A V0.9 usa sessão via cookie `HttpOnly` e tabela própria de sessões no SQLite.
+A arquitetura também foi pensada para permitir que, futuramente, a solução deixe de ser específica da Boss67 e evolua para um produto aplicável a outros negócios de serviços.
 
-Para facilitar o desenvolvimento local, o primeiro administrador é criado automaticamente com:
+---
+
+## ✂️ Fluxo do cliente
+
+1. Escolha do serviço
+2. Escolha do profissional
+3. Escolha da data
+4. Escolha do horário
+5. Nome + WhatsApp
+6. Revisão do agendamento
+7. Confirmação
+
+O fluxo foi pensado para reduzir etapas desnecessárias e evitar a obrigatoriedade de criação de conta para o cliente.
+
+---
+
+## ⚙️ Funcionalidades atuais
+
+### Cliente
+
+- Seleção de serviços
+- Seleção de profissionais
+- Opção de "Sem preferência"
+- Consulta de datas disponíveis
+- Consulta de horários disponíveis
+- Cálculo baseado na duração do serviço
+- Validação de disponibilidade
+- Formulário de nome e WhatsApp
+- Revisão antes da confirmação
+- Confirmação do agendamento
+- Link para WhatsApp
+- Geração de evento `.ics` para calendário
+
+### Área administrativa
+
+- Login administrativo
+- Sessão protegida
+- Visualização da agenda
+- Filtro por profissional e status
+- Indicadores do dia
+- Cancelamento de agendamentos
+- Bloqueio de horários
+- Remoção de bloqueios
+- Cadastro e edição de serviços
+- Ativação/desativação de serviços
+- Cadastro e edição de profissionais
+- Ativação/desativação de profissionais
+- Configuração do horário de funcionamento
+
+---
+
+## 🔐 Autenticação
+
+A área administrativa utiliza sessão baseada em cookie `HttpOnly`.
+
+Para desenvolvimento local, o projeto possui credenciais padrão:
 
 ```text
 E-mail: admin@boss67.local
 Senha: boss67demo
 ```
 
-Essas credenciais são **somente para desenvolvimento**. Antes de qualquer implantação real, defina variáveis de ambiente:
+Essas credenciais são destinadas exclusivamente ao ambiente de desenvolvimento.
+
+Antes de qualquer implantação real, defina:
 
 ```text
 BOSS67_ADMIN_EMAIL=seu-email
 BOSS67_ADMIN_PASSWORD=sua-senha-forte
 ```
 
-O servidor cria o usuário informado na primeira inicialização caso ele ainda não exista.
+Ainda são necessárias evoluções de segurança para produção, como HTTPS, rate limiting, gerenciamento de usuários e recuperação de acesso.
 
-> Para um ambiente de produção, ainda precisamos evoluir proteção de sessão, HTTPS, gerenciamento de usuários, recuperação de acesso, rate limiting e demais controles de segurança.
+---
 
-## Estrutura
+## 🗂️ Estrutura
 
 ```text
-P13-BOSS67-AGENDAMENTO/
+P13-AGENDAMENTO-BARBEARIA/
 ├── index.html
 ├── login.html
 ├── admin.html
@@ -108,36 +161,63 @@ P13-BOSS67-AGENDAMENTO/
 │   ├── login.js
 │   └── admin.js
 ├── assets/
-│   └── logo-boss67.jpg
+│   ├── logo-boss67.jpg
+│   ├── og-boss67.jpg
+│   ├── favicon.png
+│   └── apple-touch-icon.png
 ├── server/
 │   ├── api.js
 │   ├── auth.js
 │   ├── db.js
 │   └── server.js
 ├── data/
-│   └── boss67.sqlite   # desenvolvimento local
-└── package.json
+│   └── boss67.sqlite
+├── package.json
+├── start.bat
+└── README.md
 ```
 
-### Como executar
+---
 
-Requisito: Node.js 22.5+.
+## ▶️ Como executar
 
-No terminal, dentro da pasta:
+Requisito: **Node.js 22.5+**
+
+Dentro da pasta do projeto:
 
 ```bash
 npm start
 ```
 
-No Windows, o arquivo `start.bat` também pode ser usado.
+No Windows, também é possível utilizar:
 
-Depois abra:
+```text
+start.bat
+```
+
+Depois acesse:
 
 ```text
 http://localhost:3000
 ```
 
-### API pública
+Área administrativa:
+
+```text
+http://localhost:3000/login.html
+```
+
+Painel:
+
+```text
+http://localhost:3000/admin.html
+```
+
+---
+
+## 🔌 API
+
+### Pública
 
 ```text
 GET  /api/health
@@ -147,18 +227,16 @@ GET  /api/availability?date=AAAA-MM-DD&serviceId=corte&professionalId=felipe
 POST /api/bookings
 ```
 
-### API administrativa
-
-Todas as rotas abaixo exigem sessão autenticada:
+### Administrativa
 
 ```text
-GET  /api/admin/me
 POST /api/admin/login
 POST /api/admin/logout
-GET  /api/admin/overview?date=AAAA-MM-DD
-GET  /api/admin/bookings?date=AAAA-MM-DD
+GET  /api/admin/me
+GET  /api/admin/overview
+GET  /api/admin/bookings
 POST /api/admin/bookings/:id/cancel
-GET  /api/admin/blocks?date=AAAA-MM-DD
+GET  /api/admin/blocks
 POST /api/admin/blocks
 POST /api/admin/blocks/:id/remove
 GET  /api/admin/services
@@ -173,26 +251,66 @@ GET  /api/admin/opening-hours
 PUT  /api/admin/opening-hours/:weekday
 ```
 
-### Banco
+---
 
-O banco local fica em `data/boss67.sqlite`. O arquivo pode ser removido para recriar o ambiente de desenvolvimento a partir do seed do projeto.
+## 🗄️ Banco de dados
 
-Os bloqueios de demonstração do seed continuam em uma data futura (`2099-01-01`) para facilitar testes das regras do backend sem interferir na agenda real de uso do protótipo.
+O projeto utiliza **SQLite** durante o desenvolvimento local.
 
-## Próximo marco
+O banco fica em:
 
-A próxima evolução deve levar o MVP local para uma arquitetura preparada para uso real: banco remoto, publicação do backend, HTTPS, autenticação com credenciais configuráveis, observabilidade e integração com WhatsApp/notificações.
+```text
+data/boss67.sqlite
+```
 
+O banco armazena informações relacionadas a:
 
-## SEO — próximos passos de publicação
+- serviços;
+- profissionais;
+- horários de funcionamento;
+- bloqueios;
+- agendamentos;
+- sessões administrativas.
 
-A página pública já possui title, description, robots, Open Graph, dados estruturados locais e conteúdo de endereço/horário.
+---
 
-Antes do domínio final, ainda devemos:
-- definir a URL canônica absoluta;
-- gerar `robots.txt` e `sitemap.xml` com a URL real;
-- cadastrar e validar a propriedade no Google Search Console;
-- conferir o resultado no Rich Results Test;
-- manter endereço e horário iguais aos dados públicos oficiais da Boss67.
+## 🔎 SEO
 
-Não usar avaliações agregadas no schema sem uma fonte válida de avaliações da própria página. O Google informa que conteúdo estruturado precisa representar conteúdo visível e verdadeiro da página.
+A página pública já possui uma base de SEO local, incluindo:
+
+- `title` e `description` direcionados a buscas locais;
+- meta robots;
+- Open Graph;
+- Twitter Card;
+- favicon e Apple Touch Icon;
+- dados estruturados `HealthAndBeautyBusiness`;
+- informações públicas de localização e horário.
+
+### Próximos passos de SEO
+
+- definir o domínio final;
+- adicionar URL canônica absoluta;
+- gerar `robots.txt`;
+- gerar `sitemap.xml`;
+- cadastrar o domínio no Google Search Console;
+- validar os dados estruturados;
+- revisar títulos, descrições e conteúdo local.
+
+---
+
+## 📌 Status do projeto
+
+**V0.10 — Mobile + SEO**
+
+O MVP local já possui fluxo completo de agendamento, backend, banco de dados, painel administrativo e autenticação.
+
+O próximo estágio é preparar a aplicação para ambiente real, incluindo infraestrutura de produção, banco remoto, HTTPS, notificações e integração com serviços externos.
+
+---
+
+## 👤 Autor
+
+**Ruan Rodrigues**
+
+Projeto desenvolvido para portfólio durante a transição profissional para desenvolvimento web, a partir de uma oportunidade real de aplicação comercial.
+
