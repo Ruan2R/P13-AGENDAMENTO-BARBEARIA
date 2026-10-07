@@ -1,0 +1,7 @@
+# Banco local de desenvolvimento
+data/boss67.sqlite
+data/boss67.sqlite-wal
+data/boss67.sqlite-shm
+
+# Logs
+*.log

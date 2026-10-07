@@ -3,10 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Agende seu horário na Boss67 Barbearia de forma rápida e simples." />
-  <title>Boss67 Barbearia | Agendamento</title>
+  <meta name="description" content="Agende seu corte e barba na Boss67 Barbearia em Sidrolândia - MS. Escolha o serviço, profissional, dia e horário sem precisar criar conta." />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="theme-color" content="#0b0b0c" />
+  <meta name="author" content="Boss67 Barbearia" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:site_name" content="Boss67 Barbearia" />
+  <meta property="og:title" content="Boss67 Barbearia | Agendamento Online em Sidrolândia" />
+  <meta property="og:description" content="Agende seu corte e barba na Boss67 Barbearia em Sidrolândia - MS, de forma rápida e sem complicação." />
+  <meta property="og:image" content="assets/og-boss67.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Boss67 Barbearia | Agendamento Online em Sidrolândia" />
+  <meta name="twitter:description" content="Agende seu horário na Boss67 Barbearia em Sidrolândia - MS." />
+  <meta name="twitter:image" content="assets/og-boss67.jpg" />
+  <link rel="icon" href="assets/favicon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <title>Boss67 Barbearia | Agendamento Online em Sidrolândia - MS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HealthAndBeautyBusiness",
+    "name": "Boss67 Barbearia",
+    "description": "Barbearia em Sidrolândia - MS com agendamento online de serviços de cabelo e barba.",
+    "sameAs": [
+      "https://www.instagram.com/boss67barbearia/"
+    ],
+    "areaServed": {
+      "@type": "City",
+      "name": "Sidrolândia"
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Rua Lúcia de Souza Mello, 480",
+      "addressLocality": "Sidrolândia",
+      "addressRegion": "MS",
+      "postalCode": "79170-000",
+      "addressCountry": "BR"
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday"],
+        "opens": "13:30",
+        "closes": "20:00"
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "09:00",
+        "closes": "20:00"
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Saturday"],
+        "opens": "09:00",
+        "closes": "17:00"
+      }
+    ]
+  }
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
@@ -136,14 +194,29 @@
       </section>
 
       <section class="info-section" id="informacoes">
-        <div><span class="eyebrow">BOSS67</span><h2>Feito para você sair na régua.</h2><p>Protótipo do novo fluxo de agendamento da barbearia, pensado para ser simples no celular e no desktop.</p></div>
-        <div class="info-list"><div><span>SEG</span><strong>13:30 — 20:00</strong></div><div><span>TER — SEX</span><strong>09:00 — 20:00</strong></div><div><span>SÁB</span><strong>09:00 — 17:00</strong></div></div>
+        <div class="info-copy">
+          <span class="eyebrow">BOSS67 • SIDROLÂNDIA</span>
+          <h2>Feito para você sair na régua.</h2>
+          <p>Agendamento online da Boss67 Barbearia em Sidrolândia - MS. Escolha seu serviço, profissional e horário sem precisar criar conta.</p>
+          <div class="location-card">
+            <span class="location-label">ONDE ESTAMOS</span>
+            <strong>Rua Lúcia de Souza Mello, 480</strong>
+            <span>Centro • Sidrolândia - MS • 79170-000</span>
+            <a href="https://www.google.com/maps/search/?api=1&amp;query=Boss67%20Barbearia%2C%20Rua%20L%C3%BAcia%20de%20Souza%20Mello%2C%20480%2C%20Sidrol%C3%A2ndia%20-%20MS" target="_blank" rel="noopener noreferrer">Abrir no Google Maps ↗</a>
+          </div>
+          <a class="instagram-link" href="https://www.instagram.com/boss67barbearia/" target="_blank" rel="noopener noreferrer">Instagram da Boss67 ↗</a>
+        </div>
+        <div class="info-list" aria-label="Horário de funcionamento">
+          <div><span>DOM</span><strong>Fechado</strong></div>
+          <div><span>SEG</span><strong>13:30 — 20:00</strong></div>
+          <div><span>TER — SEX</span><strong>09:00 — 20:00</strong></div>
+          <div><span>SÁB</span><strong>09:00 — 17:00</strong></div>
+        </div>
       </section>
     </main>
 
-    <footer class="footer"><span>Boss67 Barbearia</span><span>Agendamento • V0.5</span></footer>
+    <footer class="footer"><span>Boss67 Barbearia</span><span>Agendamento • V0.10</span></footer>
   </div>
-  <script src="js/data.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

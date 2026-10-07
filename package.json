@@ -1,0 +1,12 @@
+{
+  "name": "p13-boss67-agendamento",
+  "version": "0.9.0",
+  "private": true,
+  "description": "MVP de agendamento da Boss67 com frontend vanilla, API Node.js + SQLite e painel administrativo autenticado.",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

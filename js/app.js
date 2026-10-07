@@ -11,63 +11,46 @@ const state = {
   step: 1,
   service: null,
   professional: null,
+  assignedProfessional: null,
   date: null,
   time: null,
   customer: { name: '', whatsapp: '' },
-  confirmed: false
+  confirmed: false,
+  selectedSlot: null,
+  availabilityByDate: new Map()
 };
 
-const STORAGE_KEY = 'boss67-bookings-v1';
+let services = [];
+let professionals = [];
 
-function loadBookings() {
-  try {
-    const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    return Array.isArray(value) ? value : [];
-  } catch {
-    return [];
+const API_BASE_URL = window.BOSS67_API_URL || (window.location.port === '3000' ? '' : 'http://localhost:3000');
+
+const api = {
+  async get(path) {
+    const response = await fetch(`${API_BASE_URL}${path}`, { headers: { Accept: 'application/json' } });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Não foi possível consultar o servidor.');
+    return data;
+  },
+
+  async post(path, body) {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const error = new Error(data.error || 'Não foi possível concluir o agendamento.');
+      error.status = response.status;
+      throw error;
+    }
+    return data;
   }
-}
-
-function saveBookings(bookings) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
-}
-
-function dateKey(date) {
-  return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
-}
-
-function isBookedForProfessional(professionalId, date, time, duration) {
-  const candidateStart = timeToMinutes(time);
-  const candidateEnd = candidateStart + duration;
-  const day = dateKey(date);
-
-  return loadBookings().some((booking) => {
-    if (booking.date !== day || booking.professionalId !== professionalId) return false;
-    const bookingStart = timeToMinutes(booking.time);
-    const bookingEnd = bookingStart + Number(booking.duration || 0);
-    return candidateStart < bookingEnd && candidateEnd > bookingStart;
-  });
-}
-
-function professionalCanTakeSlot(professionalId, date, time) {
-  return professionalId !== 'sem-preferencia' &&
-    !isBlockedForProfessional(professionalId, date.getDay(), time) &&
-    !isBookedForProfessional(professionalId, date, time, state.service.duration);
-}
-
-function findAvailableProfessional(date, time) {
-  return professionals.find((person) => professionalCanTakeSlot(person.id, date, time)) || null;
-}
-
-function getDisplayProfessional() {
-  return state.assignedProfessional || state.professional;
-}
+};
 
 function formatCurrency(value) {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(value);
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 }
 
 function formatDate(date) {
@@ -82,58 +65,29 @@ function formatDateLong(date) {
   }).format(date).replace(/^./, (char) => char.toUpperCase());
 }
 
+function dateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function getNextDates(total = 8) {
   const dates = [];
   const today = new Date();
   today.setHours(12, 0, 0, 0);
 
-  for (let offset = 0; dates.length < total && offset < 16; offset += 1) {
+  for (let offset = 0; dates.length < total && offset < 20; offset += 1) {
     const date = new Date(today);
     date.setDate(today.getDate() + offset);
-    if (!openingHours[date.getDay()]) continue;
+    if (date.getDay() === 0) continue;
     dates.push(date);
   }
   return dates;
 }
 
-function timeToMinutes(time) {
-  const [hour, minute] = time.split(':').map(Number);
-  return hour * 60 + minute;
-}
-
-function minutesToTime(totalMinutes) {
-  const hours = Math.floor(totalMinutes / 60).toString().padStart(2, '0');
-  const minutes = (totalMinutes % 60).toString().padStart(2, '0');
-  return `${hours}:${minutes}`;
-}
-
-function buildOpeningSlots(day, duration) {
-  const hours = openingHours[day];
-  if (!hours) return [];
-
-  const slots = [];
-  const closing = timeToMinutes(hours.close);
-  for (let start = timeToMinutes(hours.open); start + duration <= closing; start += 30) {
-    slots.push(minutesToTime(start));
-  }
-  return slots;
-}
-
-function availableTimesFor(date) {
-  if (!date || !state.service || !state.professional) return [];
-
-  const baseSlots = buildOpeningSlots(date.getDay(), state.service.duration);
-  const professionalId = state.professional.id;
-
-  if (professionalId === 'sem-preferencia') {
-    return baseSlots.filter((time) => Boolean(findAvailableProfessional(date, time)));
-  }
-
-  return baseSlots.filter((time) => professionalCanTakeSlot(professionalId, date, time));
-}
-
-function isBlockedForProfessional(professionalId, day, time) {
-  return Boolean(blockedSlotsByProfessional[professionalId]?.[day]?.includes(time));
+function getDisplayProfessional() {
+  return state.assignedProfessional || state.professional;
 }
 
 function setStep(step) {
@@ -147,6 +101,43 @@ function setStep(step) {
     item.classList.toggle('is-done', itemStep < step);
   });
   bookingFlow?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function setLoading(container, message = 'Carregando...') {
+  if (container) container.innerHTML = `<p class="empty-state">${message}</p>`;
+}
+
+async function loadInitialData() {
+  try {
+    const [serviceData, professionalData] = await Promise.all([
+      api.get('/api/services'),
+      api.get('/api/professionals')
+    ]);
+    services = serviceData.services.map((service) => ({
+      ...service,
+      price: Number(service.priceCents) / 100
+    }));
+    professionals = [
+      ...professionalData.professionals,
+      { id: 'sem-preferencia', name: 'Sem preferência', role: 'Qualquer profissional', initials: '?' }
+    ];
+    renderServices();
+    renderProfessionals();
+    setStep(1);
+  } catch (error) {
+    if (serviceList) {
+      serviceList.innerHTML = `
+        <div class="connection-state">
+          <strong>Não conseguimos conectar à agenda.</strong>
+          <p>Confira se o servidor está rodando e abra <code>http://localhost:3000</code>.</p>
+          <button class="secondary-button connection-retry" type="button">Tentar novamente</button>
+        </div>
+      `;
+      serviceList.querySelector('.connection-retry')?.addEventListener('click', loadInitialData);
+    }
+    setLoading(professionalList, 'Conecte o servidor para continuar o agendamento.');
+    console.error(error);
+  }
 }
 
 function renderServices() {
@@ -174,11 +165,33 @@ function renderProfessionals() {
   `).join('');
 }
 
-function renderDates() {
-  if (!dateList) return;
+async function fetchAvailability(date) {
+  const key = dateKey(date);
+  const cached = state.availabilityByDate.get(key);
+  if (cached) return cached;
+
+  const data = await api.get(`/api/availability?date=${encodeURIComponent(key)}&serviceId=${encodeURIComponent(state.service.id)}&professionalId=${encodeURIComponent(state.professional.id)}`);
+  const normalized = {
+    slots: Array.isArray(data.slots) ? data.slots : [],
+    date: key,
+    service: data.service,
+    professionalId: data.professionalId
+  };
+  state.availabilityByDate.set(key, normalized);
+  return normalized;
+}
+
+async function renderDates() {
+  if (!dateList || !state.service || !state.professional) return;
+  setLoading(dateList, 'Consultando disponibilidade...');
+
   const dates = getNextDates();
+  const results = await Promise.allSettled(dates.map((date) => fetchAvailability(date)));
+
   dateList.innerHTML = dates.map((date, index) => {
-    const hasAvailability = availableTimesFor(date).length > 0;
+    const result = results[index];
+    const availability = result.status === 'fulfilled' ? result.value : { slots: [] };
+    const hasAvailability = availability.slots.length > 0;
     const weekday = new Intl.DateTimeFormat('pt-BR', { weekday: 'short' }).format(date).replace('.', '');
     const month = new Intl.DateTimeFormat('pt-BR', { month: 'short' }).format(date).replace('.', '');
 
@@ -186,25 +199,42 @@ function renderDates() {
       <button class="date-card ${index === 0 ? 'is-today' : ''}" type="button"
         data-action="select-date" data-date="${date.toISOString()}" ${hasAvailability ? '' : 'disabled'}>
         <span>${index === 0 ? 'Hoje' : weekday}</span>
-        <strong>${date.getDate().toString().padStart(2, '0')}</strong>
+        <strong>${String(date.getDate()).padStart(2, '0')}</strong>
         <small>${month}</small>
-        <em>${hasAvailability ? 'Disponível' : 'Sem horários'}</em>
+        <em>${hasAvailability ? `${availability.slots.length} horários` : 'Sem horários'}</em>
       </button>
     `;
   }).join('');
 }
 
-function renderTimes(date) {
+async function renderTimes(date) {
   if (!timeList || !date) return;
-  const times = availableTimesFor(date);
-  timeList.innerHTML = times.length
-    ? times.map((time) => `<button class="time-card" type="button" data-action="select-time" data-time="${time}">${time}</button>`).join('')
-    : '<p class="empty-state">Nenhum horário disponível nesta data para esta combinação.</p>';
+  setLoading(timeList, 'Consultando horários...');
+
+  try {
+    const availability = await fetchAvailability(date);
+    const slots = availability.slots;
+    if (!slots.length) {
+      timeList.innerHTML = '<p class="empty-state">Nenhum horário disponível nesta data para esta combinação.</p>';
+      return;
+    }
+
+    timeList.innerHTML = slots.map((slot) => `
+      <button class="time-card" type="button"
+        data-action="select-time"
+        data-time="${slot.time}"
+        data-professional-id="${slot.professionalId}"
+        data-professional-name="${slot.professionalName}">
+        ${slot.time}
+      </button>
+    `).join('');
+  } catch (error) {
+    timeList.innerHTML = `<p class="empty-state">${error.message}</p>`;
+  }
 }
 
 function updateSummary() {
   if (!summary || !state.service || !state.professional || !state.date || !state.time) return;
-
   const displayProfessional = getDisplayProfessional();
   summary.innerHTML = `
     <div class="summary-main">
@@ -245,7 +275,7 @@ function openWhatsApp() {
   const message = [
     'Olá! Gostaria de falar sobre meu agendamento na Boss67.',
     `Serviço: ${state.service.name}`,
-    `Profissional: ${state.professional.name}`,
+    `Profissional: ${getDisplayProfessional().name}`,
     `Data: ${formatDateLong(state.date)}`,
     `Horário: ${state.time}`
   ].join('\n');
@@ -267,7 +297,7 @@ function downloadCalendarEvent() {
     `DTSTART:${formatICS(start)}`,
     `DTEND:${formatICS(end)}`,
     `SUMMARY:${state.service.name} — Boss67`,
-    `DESCRIPTION:Agendamento com ${state.professional.name} na Boss67 Barbearia.`,
+    `DESCRIPTION:Agendamento com ${getDisplayProfessional().name} na Boss67 Barbearia.`,
     'END:VEVENT',
     'END:VCALENDAR'
   ].join('\r\n');
@@ -297,41 +327,61 @@ serviceList?.addEventListener('click', (event) => {
   state.assignedProfessional = null;
   state.date = null;
   state.time = null;
+  state.selectedSlot = null;
+  state.availabilityByDate.clear();
   state.confirmed = false;
+
   document.querySelector('#selected-service-name').textContent = state.service.name;
   document.querySelector('#selected-service-price').textContent = formatCurrency(state.service.price);
   setStep(2);
 });
 
-professionalList?.addEventListener('click', (event) => {
+professionalList?.addEventListener('click', async (event) => {
   const button = event.target.closest('[data-action="select-professional"]');
   if (!button) return;
   state.professional = professionals.find((item) => item.id === button.dataset.professionalId) || null;
   state.assignedProfessional = null;
   state.date = null;
   state.time = null;
-  renderDates();
+  state.selectedSlot = null;
+  state.availabilityByDate.clear();
+  if (!state.professional) return;
+
   setStep(3);
+  await renderDates();
 });
 
-dateList?.addEventListener('click', (event) => {
+dateList?.addEventListener('click', async (event) => {
   const button = event.target.closest('[data-action="select-date"]');
   if (!button || button.disabled) return;
   state.date = new Date(button.dataset.date);
   state.time = null;
+  state.assignedProfessional = null;
+  state.selectedSlot = null;
+
   document.querySelectorAll('.date-card').forEach((card) => card.classList.remove('is-selected'));
   button.classList.add('is-selected');
-  renderTimes(state.date);
   document.querySelector('#selected-date-label').textContent = formatDate(state.date);
+  await renderTimes(state.date);
 });
 
 timeList?.addEventListener('click', (event) => {
   const button = event.target.closest('[data-action="select-time"]');
   if (!button) return;
+
   state.time = button.dataset.time;
-  state.assignedProfessional = state.professional?.id === 'sem-preferencia'
-    ? findAvailableProfessional(state.date, state.time)
-    : state.professional;
+  state.selectedSlot = {
+    time: button.dataset.time,
+    professionalId: button.dataset.professionalId,
+    professionalName: button.dataset.professionalName
+  };
+
+  state.assignedProfessional = professionals.find((item) => item.id === button.dataset.professionalId) || {
+    id: button.dataset.professionalId,
+    name: button.dataset.professionalName,
+    role: 'Profissional'
+  };
+
   document.querySelectorAll('.time-card').forEach((card) => card.classList.remove('is-selected'));
   button.classList.add('is-selected');
   updateSummary();
@@ -357,54 +407,57 @@ document.querySelector('#customer-form')?.addEventListener('submit', (event) => 
 
 document.querySelector('[data-action="back-customer"]')?.addEventListener('click', () => setStep(4));
 
-document.querySelector('#confirm-booking')?.addEventListener('click', () => {
-  const professional = getDisplayProfessional();
-  if (!state.service || !professional || !state.date || !state.time) return;
+document.querySelector('#confirm-booking')?.addEventListener('click', async (event) => {
+  const button = event.currentTarget;
+  const requestedProfessional = state.professional?.id;
+  if (!state.service || !requestedProfessional || !state.date || !state.time) return;
 
-  if (!professionalCanTakeSlot(professional.id, state.date, state.time)) {
-    alert('Esse horário acabou de ser reservado. Escolha outro horário disponível.');
-    state.time = null;
-    renderDates();
-    document.querySelector('#selected-date-label').textContent = formatDate(state.date);
-    renderTimes(state.date);
-    setStep(3);
-    return;
+  button.disabled = true;
+  button.innerHTML = 'Confirmando... <span>↻</span>';
+
+  try {
+    const result = await api.post('/api/bookings', {
+      serviceId: state.service.id,
+      professionalId: requestedProfessional,
+      date: dateKey(state.date),
+      time: state.time,
+      customerName: state.customer.name,
+      customerWhatsapp: state.customer.whatsapp
+    });
+
+    const booking = result.booking;
+    state.assignedProfessional = professionals.find((item) => item.id === booking.professionalId) || {
+      id: booking.professionalId,
+      name: booking.professionalName,
+      role: 'Profissional'
+    };
+    state.confirmed = true;
+    updateConfirmation();
+    state.availabilityByDate.delete(dateKey(state.date));
+
+    const review = document.querySelector('.booking-step[data-step="5"]');
+    if (review) review.hidden = true;
+    document.querySelector('#confirmation')?.removeAttribute('hidden');
+    document.querySelector('.progress-item[data-progress="4"]')?.classList.add('is-done');
+    document.querySelector('#confirmation')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (error) {
+    alert(error.message);
+    if (error.status === 409) {
+      state.time = null;
+      state.assignedProfessional = null;
+      state.selectedSlot = null;
+      state.availabilityByDate.delete(dateKey(state.date));
+      setStep(3);
+      await renderDates();
+      await renderTimes(state.date);
+    }
+  } finally {
+    button.disabled = false;
+    button.innerHTML = 'Confirmar agendamento <span>✓</span>';
   }
-
-  const bookings = loadBookings();
-  bookings.push({
-    id: `boss67-${Date.now()}`,
-    serviceId: state.service.id,
-    serviceName: state.service.name,
-    duration: state.service.duration,
-    professionalId: professional.id,
-    professionalName: professional.name,
-    date: dateKey(state.date),
-    time: state.time,
-    customerName: state.customer.name,
-    customerWhatsapp: state.customer.whatsapp,
-    createdAt: new Date().toISOString()
-  });
-  saveBookings(bookings);
-
-  state.confirmed = true;
-  updateConfirmation();
-  const review = document.querySelector('.booking-step[data-step="5"]');
-  if (review) review.hidden = true;
-  document.querySelector('#confirmation')?.removeAttribute('hidden');
-  document.querySelector('.progress-item[data-progress="4"]')?.classList.add('is-done');
-  document.querySelector('#confirmation')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
 document.querySelector('#calendar-button')?.addEventListener('click', downloadCalendarEvent);
 document.querySelector('#whatsapp-button')?.addEventListener('click', openWhatsApp);
 
-window.addEventListener('storage', (event) => {
-  if (event.key !== STORAGE_KEY || !state.date || state.confirmed) return;
-  renderDates();
-  renderTimes(state.date);
-});
-
-renderServices();
-renderProfessionals();
-setStep(1);
+loadInitialData();

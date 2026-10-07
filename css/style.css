@@ -283,3 +283,135 @@ a { color: inherit; text-decoration: none; }
   .summary-confirm > div:last-child { border-bottom: 0; }
   .time-heading { align-items: flex-start; flex-direction: column; }
 }
+
+
+/* ===== V0.10 — polish mobile + local SEO content ===== */
+.info-copy { min-width: 0; }
+.location-card {
+  margin-top: 22px;
+  padding: 18px;
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #101011;
+}
+.location-label {
+  color: var(--gold);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+.location-card strong { font-size: .95rem; }
+.location-card span:not(.location-label) { color: var(--muted); font-size: .83rem; line-height: 1.5; }
+.location-card a, .instagram-link { color: var(--gold); font-size: .82rem; font-weight: 700; }
+.instagram-link { display: inline-block; margin-top: 12px; }
+.connection-state {
+  padding: 22px;
+  border: 1px solid #3a3200;
+  border-radius: 14px;
+  background: rgba(255,224,0,.035);
+}
+.connection-state strong { display: block; }
+.connection-state p { margin-top: 8px; color: var(--muted); line-height: 1.6; }
+.connection-state code {
+  color: #fff;
+  font: 600 .84rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.connection-retry {
+  margin-top: 16px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid #3d3500;
+  border-radius: 10px;
+  background: #17170e;
+  color: var(--gold);
+  cursor: pointer;
+  font: 700 .85rem Inter, sans-serif;
+}
+
+@media (max-width: 800px) {
+  .hero {
+    gap: 24px;
+    padding: 44px 0 46px;
+  }
+  .hero-card {
+    padding: 16px;
+    border-radius: 16px;
+  }
+  .hero-card-brand {
+    gap: 10px;
+    padding-bottom: 14px;
+  }
+  .hero-card-brand img {
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+  }
+  .hero-card-brand strong { font-size: 15px; }
+  .hero-card-top { padding: 14px 0 3px; }
+  .hero-step { padding: 14px 0; }
+  .hero-step strong { font-size: 14px; }
+  .hero-card-footer { margin-top: 8px; font-size: 11px; }
+  .booking-shell { padding-top: 12px; }
+  .progress-bar {
+    margin-bottom: 30px;
+    padding: 8px 0 10px;
+    background: rgba(11,11,12,.94);
+    backdrop-filter: blur(10px);
+  }
+  .booking-step { scroll-margin-top: 90px; }
+  .service-card {
+    min-height: 82px;
+    padding: 16px;
+  }
+  .service-action {
+    min-width: 82px;
+    min-height: 44px;
+  }
+  .info-section { padding: 52px 0; gap: 28px; }
+  .info-list div { padding: 16px 18px; }
+}
+
+@media (max-width: 520px) {
+  .hero, .booking-shell, .info-section, .footer {
+    width: min(100% - 24px, var(--max));
+  }
+  .topbar { min-height: 66px; padding: 0 14px; }
+  .brand { gap: 9px; }
+  .brand-logo-wrap { width: 40px; height: 40px; border-radius: 9px; }
+  .brand-copy strong { font-size: 15px; }
+  .brand-copy small { margin-top: 4px; font-size: 6px; }
+  .hero { padding: 38px 0 40px; }
+  .hero h1 { max-width: 100%; font-size: clamp(38px, 11vw, 50px); line-height: .99; }
+  .hero p { margin-top: 18px; font-size: 14px; line-height: 1.6; }
+  .primary-button { margin-top: 28px; min-height: 50px; padding: 0 18px; }
+  .hero-note { margin-top: 12px; font-size: 10.5px; }
+  .hero-card { padding: 15px; }
+  .hero-card-brand img { width: 42px; height: 42px; }
+  .hero-card-brand strong { font-size: 14px; }
+  .hero-step { padding: 12px 0; }
+  .hero-card-top { padding-top: 12px; }
+  .hero-card-footer { line-height: 1.5; }
+  .booking-shell { padding-left: 2px; padding-right: 2px; }
+  .progress-bar { gap: 6px; font-size: .68rem; }
+  .progress-line { min-width: 16px; }
+  .section-heading h2 { font-size: clamp(29px, 8.5vw, 38px); }
+  .section-heading p { font-size: 14px; line-height: 1.55; }
+  .service-grid { gap: 9px; margin-top: 24px; }
+  .service-card { gap: 12px; padding: 15px; border-radius: 14px; }
+  .service-name { font-size: .95rem; }
+  .service-meta { font-size: .76rem; }
+  .service-price { font-size: .9rem; }
+  .service-action { min-width: 78px; padding: 0 9px; font-size: .72rem; }
+  .date-grid { gap: 8px; }
+  .date-card { min-height: 88px; padding: 10px 5px; }
+  .date-card strong { font-size: 1.12rem; }
+  .time-grid { gap: 8px; }
+  .time-card { min-height: 50px; }
+  .summary-card { padding: 17px; }
+  .customer-form input { min-height: 50px; font-size: 16px; }
+  .confirmation { margin-top: 24px; padding: 36px 16px; border-radius: 16px; }
+  .confirmation-actions { max-width: none; }
+  .location-card { padding: 16px; }
+}

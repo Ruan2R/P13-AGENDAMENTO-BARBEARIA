@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Acesso administrativo da Boss67 Barbearia." />
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <title>Boss67 | Acesso administrativo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body class="login-page">
+  <main class="login-shell">
+    <section class="login-card" aria-labelledby="login-title">
+      <a class="login-brand" href="/" aria-label="Voltar para o agendamento">
+        <span class="brand-logo-wrap"><img src="assets/logo-boss67.jpg" alt="Logo Boss67 Barbearia" /></span>
+        <span><strong>BOSS67</strong><small>ÁREA ADMINISTRATIVA</small></span>
+      </a>
+      <div class="login-copy">
+        <span class="eyebrow">ACESSO RESTRITO</span>
+        <h1 id="login-title">Entre para gerenciar a agenda.</h1>
+        <p>Veja reservas, configure serviços, profissionais e horários de funcionamento.</p>
+      </div>
+      <form id="login-form" class="login-form">
+        <label>E-mail<input id="email" name="email" type="email" autocomplete="username" placeholder="admin@boss67.local" required /></label>
+        <label>Senha<input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required /></label>
+        <button class="primary-button" type="submit">Entrar <span>→</span></button>
+      </form>
+      <p id="login-message" class="form-message" role="alert"></p>
+      <a class="login-back" href="/">← Voltar para o agendamento</a>
+    </section>
+    <aside class="login-aside">
+      <span class="eyebrow">BOSS67</span>
+      <h2>Controle simples.<br />Agenda organizada.</h2>
+      <div class="login-aside-list">
+        <div><span>01</span><strong>Agenda do dia</strong></div>
+        <div><span>02</span><strong>Serviços e preços</strong></div>
+        <div><span>03</span><strong>Equipe e horários</strong></div>
+      </div>
+    </aside>
+  </main>
+  <script src="js/login.js"></script>
+</body>
+</html>

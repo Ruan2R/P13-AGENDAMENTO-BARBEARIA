@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Painel de administração da agenda Boss67." />
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <title>Boss67 | Painel da Agenda</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+  <div class="admin-shell">
+    <header class="admin-topbar">
+      <a class="admin-brand" href="/" aria-label="Voltar para o agendamento">
+        <span class="brand-logo-wrap"><img src="assets/logo-boss67.jpg" alt="Logo Boss67 Barbearia" /></span>
+        <span><strong>BOSS67</strong><small>PAINEL DA AGENDA</small></span>
+      </a>
+      <div class="admin-top-actions">
+        <span id="session-user" class="session-user">—</span>
+        <a href="/">Ver agendamento ↗</a>
+        <button id="logout-button" class="ghost-button" type="button">Sair</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="admin-heading">
+        <div>
+          <span class="eyebrow">GESTÃO</span>
+          <h1>Agenda da Boss67</h1>
+          <p>Organize reservas, equipe, serviços e horários de funcionamento em um só lugar.</p>
+        </div>
+        <div class="date-control">
+          <button id="previous-day" type="button" aria-label="Dia anterior">←</button>
+          <input id="agenda-date" type="date" />
+          <button id="next-day" type="button" aria-label="Próximo dia">→</button>
+          <button id="today-button" type="button" class="today-button">Hoje</button>
+        </div>
+      </section>
+
+      <nav class="admin-tabs" aria-label="Seções administrativas">
+        <button class="admin-tab is-active" type="button" data-tab="agenda">Agenda</button>
+        <button class="admin-tab" type="button" data-tab="services">Serviços</button>
+        <button class="admin-tab" type="button" data-tab="professionals">Profissionais</button>
+        <button class="admin-tab" type="button" data-tab="hours">Horários</button>
+      </nav>
+
+      <section class="admin-view is-active" data-view="agenda">
+        <section class="stats-grid" id="stats-grid" aria-live="polite">
+          <article class="stat-card"><span>Agendamentos</span><strong>—</strong><small>no dia selecionado</small></article>
+          <article class="stat-card"><span>Confirmados</span><strong>—</strong><small>ocupando a agenda</small></article>
+          <article class="stat-card"><span>Horários livres</span><strong>—</strong><small>considerando a escala</small></article>
+          <article class="stat-card"><span>Faturamento</span><strong>—</strong><small>serviços confirmados</small></article>
+        </section>
+
+        <section class="agenda-panel">
+          <div class="panel-header">
+            <div><span class="eyebrow">AGENDA DO DIA</span><h2 id="agenda-title">—</h2></div>
+            <div class="filters">
+              <label>Profissional<select id="professional-filter"><option value="all">Todos</option></select></label>
+              <label>Status<select id="status-filter"><option value="all">Todos</option><option value="confirmed">Confirmados</option><option value="cancelled">Cancelados</option></select></label>
+              <button id="refresh-button" type="button" class="secondary-button">Atualizar ↻</button>
+            </div>
+          </div>
+          <div id="booking-list" class="booking-list" aria-live="polite"></div>
+        </section>
+
+        <section class="management-grid">
+          <article class="manage-card">
+            <div class="manage-heading"><div><span class="eyebrow">PAUSA</span><h2>Bloquear horário</h2></div></div>
+            <p>Use quando o profissional estiver ocupado, em intervalo ou indisponível.</p>
+            <form id="block-form" class="block-form">
+              <label>Profissional<select id="block-professional" name="professionalId" required></select></label>
+              <label>Data<input id="block-date" name="date" type="date" required /></label>
+              <div class="form-row">
+                <label>Início<input name="startTime" type="time" step="1800" required /></label>
+                <label>Duração<select name="duration" required><option value="15">15 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">60 min</option><option value="90">90 min</option><option value="120">120 min</option></select></label>
+              </div>
+              <label>Motivo (opcional)<input name="reason" placeholder="Ex.: almoço, compromisso..." maxlength="80" /></label>
+              <button class="primary-button" type="submit">Bloquear horário <span>＋</span></button>
+            </form>
+            <div id="block-message" class="form-message" role="status"></div>
+          </article>
+
+          <article class="manage-card">
+            <div class="manage-heading"><div><span class="eyebrow">BLOQUEIOS</span><h2>Indisponibilidades do dia</h2></div></div>
+            <p>Bloqueios criados para a data selecionada.</p>
+            <div id="block-list" class="block-list"></div>
+          </article>
+        </section>
+      </section>
+
+      <section class="admin-view" data-view="services" hidden>
+        <div class="section-heading"><div><span class="eyebrow">CATÁLOGO</span><h2>Serviços e preços</h2><p>Atualize o que aparece para o cliente no agendamento.</p></div></div>
+        <section class="management-grid">
+          <article class="manage-card"><div class="manage-heading"><div><span class="eyebrow">NOVO</span><h2>Cadastrar serviço</h2></div></div>
+            <form id="service-form" class="block-form">
+              <label>Nome<input name="name" maxlength="60" placeholder="Ex.: Corte infantil" required /></label>
+              <div class="form-row"><label>Duração<select name="duration" required><option value="15">15 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">60 min</option><option value="90">90 min</option><option value="120">120 min</option></select></label><label>Preço (R$)<input name="price" type="number" min="0" step="0.01" placeholder="50,00" required /></label></div>
+              <button class="primary-button" type="submit">Cadastrar serviço <span>＋</span></button>
+            </form>
+            <div id="service-message" class="form-message" role="status"></div>
+          </article>
+          <article class="manage-card"><div class="manage-heading"><div><span class="eyebrow">CADASTRADOS</span><h2>Serviços</h2></div></div><div id="service-list" class="config-list"></div></article>
+        </section>
+      </section>
+
+      <section class="admin-view" data-view="professionals" hidden>
+        <div class="section-heading"><div><span class="eyebrow">EQUIPE</span><h2>Profissionais</h2><p>Gerencie quem aparece como opção durante o agendamento.</p></div></div>
+        <section class="management-grid">
+          <article class="manage-card"><div class="manage-heading"><div><span class="eyebrow">NOVO</span><h2>Cadastrar profissional</h2></div></div>
+            <form id="professional-form" class="block-form">
+              <label>Nome<input name="name" maxlength="60" placeholder="Ex.: João" required /></label>
+              <label>Função<input name="role" maxlength="60" placeholder="Ex.: Barbeiro" required /></label>
+              <button class="primary-button" type="submit">Cadastrar profissional <span>＋</span></button>
+            </form>
+            <div id="professional-message" class="form-message" role="status"></div>
+          </article>
+          <article class="manage-card"><div class="manage-heading"><div><span class="eyebrow">CADASTRADOS</span><h2>Profissionais</h2></div></div><div id="professional-list" class="config-list"></div></article>
+        </section>
+      </section>
+
+      <section class="admin-view" data-view="hours" hidden>
+        <div class="section-heading"><div><span class="eyebrow">FUNCIONAMENTO</span><h2>Horários da barbearia</h2><p>Defina os horários em que novos agendamentos podem ser criados.</p></div></div>
+        <section class="manage-card hours-card"><div id="hours-list" class="hours-list"></div></section>
+      </section>
+    </main>
+
+    <footer class="admin-footer"><span>Boss67 Barbearia</span><span>Painel • V0.9</span></footer>
+  </div>
+  <script src="js/admin.js"></script>
+</body>
+</html>
