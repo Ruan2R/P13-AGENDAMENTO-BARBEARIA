@@ -428,10 +428,11 @@ function getAdminOverview(searchParams) {
   const date = searchParams.get('date');
   if (!date || !isValidDate(date)) return { status: 400, body: { error: 'date válido é obrigatório.' } };
   const row = db.prepare(`
-    SELECT COUNT(*) AS total,
-      SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) AS confirmed,
-      SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled,
-      COALESCE(SUM(CASE WHEN status = 'confirmed' THEN s.price_cents ELSE 0 END), 0) AS revenueCents
+    SELECT
+      COUNT(DISTINCT COALESCE(b.booking_group_id, b.id)) AS total,
+      COUNT(DISTINCT CASE WHEN b.status = 'confirmed' THEN COALESCE(b.booking_group_id, b.id) END) AS confirmed,
+      COUNT(DISTINCT CASE WHEN b.status = 'cancelled' THEN COALESCE(b.booking_group_id, b.id) END) AS cancelled,
+      COALESCE(SUM(CASE WHEN b.status = 'confirmed' THEN s.price_cents ELSE 0 END), 0) AS revenueCents
     FROM bookings b JOIN services s ON s.id = b.service_id WHERE b.date = ?
   `).get(date);
   return { status: 200, body: { date, summary: {
@@ -459,6 +460,22 @@ function cancelAdminBooking(bookingId) {
   if (booking.status === 'cancelled') return { status: 200, body: { message: 'Agendamento já estava cancelado.' } };
   db.prepare(`UPDATE bookings SET status = 'cancelled' WHERE id = ?`).run(bookingId);
   return { status: 200, body: { message: 'Agendamento cancelado com sucesso.', bookingId } };
+}
+
+function cancelAdminBookingGroup(groupId) {
+  if (!groupId) return { status: 400, body: { error: 'Grupo de agendamento é obrigatório.' } };
+  const bookings = db.prepare(`SELECT id, status FROM bookings WHERE COALESCE(booking_group_id, id) = ?`).all(groupId);
+  if (!bookings.length) return { status: 404, body: { error: 'Atendimento não encontrado.' } };
+
+  db.exec('BEGIN IMMEDIATE');
+  try {
+    db.prepare(`UPDATE bookings SET status = 'cancelled' WHERE COALESCE(booking_group_id, id) = ? AND status = 'confirmed'`).run(groupId);
+    db.exec('COMMIT');
+    return { status: 200, body: { message: 'Atendimento cancelado com sucesso.', groupId } };
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  }
 }
 
 function createAdminBlock(payload) {
@@ -684,6 +701,12 @@ async function handleApi(req, res, pathname, searchParams) {
     const cancelMatch = pathname.match(/^\/api\/admin\/bookings\/([^/]+)\/cancel$/);
     if (req.method === 'POST' && cancelMatch) {
       const result = cancelAdminBooking(decodeURIComponent(cancelMatch[1]));
+      return sendJson(res, result.status, result.body);
+    }
+
+    const cancelGroupMatch = pathname.match(/^\/api\/admin\/booking-groups\/([^/]+)\/cancel$/);
+    if (req.method === 'POST' && cancelGroupMatch) {
+      const result = cancelAdminBookingGroup(decodeURIComponent(cancelGroupMatch[1]));
       return sendJson(res, result.status, result.body);
     }
 

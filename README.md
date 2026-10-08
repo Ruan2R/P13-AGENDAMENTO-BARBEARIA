@@ -93,6 +93,8 @@ Além da experiência do cliente, o sistema foi estruturado para evoluir para um
 - Cadastro e edição de profissionais
 - Ativação/desativação de serviços e profissionais
 - Configuração do horário de funcionamento
+- Visualização da agenda agrupada por atendimento
+- Cancelamento de atendimento com múltiplos procedimentos
 
 ---
 
@@ -186,6 +188,7 @@ GET  /api/admin/me
 GET  /api/admin/overview
 GET  /api/admin/bookings
 POST /api/admin/bookings/:id/cancel
+POST /api/admin/booking-groups/:groupId/cancel
 GET  /api/admin/blocks
 POST /api/admin/blocks
 POST /api/admin/blocks/:id/remove
@@ -225,13 +228,15 @@ Próximos passos:
 
 ## 📌 Status
 
-**V0.16.2 — Refinamento dos controles de procedimentos**
+**V0.17.3 — Refinamento da confirmação via WhatsApp**
 
-A V0.15 permite revisar a lista de procedimentos antes da confirmação, editar individualmente o serviço de um item e remover procedimentos sem reiniciar o agendamento.
+A V0.17 aprimora a área administrativa com uma visão da agenda agrupada por atendimento, reunindo procedimentos do mesmo pedido e permitindo ações rápidas sobre o atendimento completo.
 
-Ao editar um procedimento, serviço e profissional podem ser escolhidos novamente e a disponibilidade de data/horário é recalculada para manter o conjunto consistente.
+O painel passa a apresentar horário, cliente, procedimentos, profissionais, total e status em um único bloco. Atendimentos com múltiplos procedimentos podem ser cancelados de forma atômica.
 
 O fluxo de múltiplos procedimentos e a confirmação em lote continuam preservados.
+
+A área administrativa agora conta com uma leitura mais próxima de uma agenda operacional diária, reduzindo a fragmentação de um mesmo atendimento em várias linhas.
 
 ## 👤 Autor
 
@@ -244,3 +249,8 @@ Projeto desenvolvido para portfólio durante a transição profissional para des
 Após a confirmação, o cliente pode enviar uma mensagem já preenchida diretamente para o WhatsApp da Boss67, com a data, os procedimentos, os profissionais, os horários e o total do atendimento.
 
 O número fica separado em `js/config.js` para facilitar a troca da unidade sem alterar a lógica da aplicação. O número configurado nesta versão foi obtido em uma listagem pública da Boss67 e deve ser confirmado com o estabelecimento antes do uso em produção.
+
+
+### Confirmação via WhatsApp
+
+A área administrativa permite abrir uma conversa com o cliente com uma mensagem padronizada informando que o agendamento foi confirmado pela Boss67, incluindo data, procedimentos, profissionais, horários e total. A confirmação do cliente continua sendo feita exclusivamente pelo site.
