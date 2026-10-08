@@ -2,6 +2,8 @@ const crypto = require('node:crypto');
 const { db } = require('./db');
 const { ensureAdminUser, login, logout, requireAdmin } = require('./auth');
 
+const BUSINESS_TIME_ZONE = process.env.BOSS67_TIMEZONE || 'America/Campo_Grande';
+
 ensureAdminUser();
 
 function sendJson(res, status, payload) {
@@ -49,7 +51,19 @@ function minutesToTime(total) {
 }
 
 function isValidDate(date) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(date) && !Number.isNaN(new Date(`${date}T12:00:00`).getTime());
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(date));
+  if (!match) return false;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+
+  return (
+    parsed.getUTCFullYear() === year &&
+    parsed.getUTCMonth() === month - 1 &&
+    parsed.getUTCDate() === day
+  );
 }
 
 function isValidTime(time) {
@@ -60,6 +74,36 @@ function isValidTime(time) {
 
 function getWeekday(date) {
   return new Date(`${date}T12:00:00`).getDay();
+}
+
+function getBusinessClock(date = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: BUSINESS_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23'
+  }).formatToParts(date);
+
+  const values = Object.fromEntries(
+    parts
+      .filter((part) => part.type !== 'literal')
+      .map((part) => [part.type, part.value])
+  );
+
+  return {
+    date: `${values.year}-${values.month}-${values.day}`,
+    minutes: Number(values.hour) * 60 + Number(values.minute)
+  };
+}
+
+function isPastSlot(date, startTime) {
+  const now = getBusinessClock();
+  const slotMinutes = timeToMinutes(startTime);
+
+  return date < now.date || (date === now.date && slotMinutes <= now.minutes);
 }
 
 function openingForDate(date) {
@@ -112,6 +156,7 @@ function buildSlots(date, service, professionalId) {
   const close = timeToMinutes(opening.close);
   for (let start = open; start + service.duration <= close; start += 30) {
     const time = minutesToTime(start);
+    if (isPastSlot(date, time)) continue;
     if (isBlocked(professionalId, date, time, service.duration)) continue;
     if (isBooked(professionalId, date, time, service.duration)) continue;
     slots.push(time);
@@ -157,11 +202,25 @@ function getAvailability(searchParams) {
 function createBooking(payload) {
   const { serviceId, professionalId, date, time, customerName, customerWhatsapp } = payload;
   const name = String(customerName || '').trim();
-  const whatsapp = String(customerWhatsapp || '').trim();
-  if (!serviceId || !professionalId || !date || !time || !name || !whatsapp) {
+  const whatsappDigits = String(customerWhatsapp || '').replace(/\D/g, '');
+  if (!serviceId || !professionalId || !date || !time || !name || !whatsappDigits) {
     return { status: 400, body: { error: 'Preencha serviço, profissional, data, horário, nome e WhatsApp.' } };
   }
   if (!isValidDate(date) || !isValidTime(time)) return { status: 400, body: { error: 'Data ou horário inválido.' } };
+
+  if (name.length < 2 || name.length > 80) {
+    return { status: 400, body: { error: 'Informe um nome válido.' } };
+  }
+
+  if (!/^\d{10,13}$/.test(whatsappDigits)) {
+    return { status: 400, body: { error: 'Informe um WhatsApp válido.' } };
+  }
+
+  const whatsapp = whatsappDigits.startsWith('55') ? whatsappDigits : `55${whatsappDigits}`;
+
+  if (isPastSlot(date, time)) {
+    return { status: 409, body: { error: 'Esse horário já passou. Escolha outro horário.' } };
+  }
 
   const service = getService(serviceId);
   if (!service) return { status: 404, body: { error: 'Serviço não encontrado.' } };

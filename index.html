@@ -151,8 +151,14 @@
           </div>
           <div id="booking-summary" class="summary-card"></div>
           <form id="customer-form" class="customer-form">
-            <label>Nome<input name="name" autocomplete="name" placeholder="Seu nome" required /></label>
-            <label>WhatsApp<input name="whatsapp" type="tel" autocomplete="tel" placeholder="(67) 99999-9999" required /></label>
+            <label>
+              Nome
+              <input name="name" autocomplete="name" maxlength="80" placeholder="Seu nome" required />
+            </label>
+            <label>
+              WhatsApp
+              <input name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="(67) 99999-9999" required />
+            </label>
             <button class="primary-button full-width" type="submit">Continuar <span>→</span></button>
           </form>
         </section>

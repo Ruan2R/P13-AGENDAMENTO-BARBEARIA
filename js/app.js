@@ -7,6 +7,16 @@ const summary = document.querySelector('#booking-summary');
 const progressItems = [...document.querySelectorAll('.progress-item')];
 const heroButtons = [...document.querySelectorAll('[data-start-booking]')];
 
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  }[char]));
+}
+
 const state = {
   step: 1,
   service: null,
@@ -145,7 +155,7 @@ function renderServices() {
   serviceList.innerHTML = services.map((service) => `
     <article class="service-card" data-service-id="${service.id}">
       <div>
-        <h3 class="service-name">${service.name}</h3>
+        <h3 class="service-name">${escapeHtml(service.name)}</h3>
         <p class="service-meta">Aproximadamente ${service.duration} min.</p>
         <p class="service-price">${formatCurrency(service.price)}</p>
       </div>
@@ -158,8 +168,8 @@ function renderProfessionals() {
   if (!professionalList) return;
   professionalList.innerHTML = professionals.map((person) => `
     <button class="person-card" type="button" data-action="select-professional" data-professional-id="${person.id}">
-      <span class="person-avatar">${person.initials}</span>
-      <span class="person-copy"><strong>${person.name}</strong><small>${person.role}</small></span>
+      <span class="person-avatar">${escapeHtml(person.initials)}</span>
+      <span class="person-copy"><strong>${escapeHtml(person.name)}</strong><small>${escapeHtml(person.role)}</small></span>
       <span class="choice-arrow">→</span>
     </button>
   `).join('');
@@ -223,9 +233,9 @@ async function renderTimes(date) {
       <button class="time-card" type="button"
         data-action="select-time"
         data-time="${slot.time}"
-        data-professional-id="${slot.professionalId}"
-        data-professional-name="${slot.professionalName}">
-        ${slot.time}
+        data-professional-id="${escapeHtml(slot.professionalId)}"
+        data-professional-name="${escapeHtml(slot.professionalName)}">
+        ${escapeHtml(slot.time)}
       </button>
     `).join('');
   } catch (error) {
@@ -239,8 +249,8 @@ function updateSummary() {
   summary.innerHTML = `
     <div class="summary-main">
       <span class="eyebrow">RESUMO</span>
-      <h3>${state.service.name}</h3>
-      <p>${displayProfessional?.name || 'A definir'} • ${formatDate(state.date)} às ${state.time}</p>
+      <h3>${escapeHtml(state.service.name)}</h3>
+      <p>${escapeHtml(displayProfessional?.name || 'A definir')} • ${escapeHtml(formatDate(state.date))} às ${escapeHtml(state.time)}</p>
     </div>
     <strong class="summary-price">${formatCurrency(state.service.price)}</strong>
   `;
