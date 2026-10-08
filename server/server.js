@@ -67,11 +67,7 @@ const server = http.createServer(async (req, res) => {
     const contentType = mimeTypes[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
     res.writeHead(200, {
       'Content-Type': contentType,
-<<<<<<< HEAD
       'Cache-Control': fileName === 'admin.html' || fileName === 'login.html' ? 'no-store' : 'no-cache'
-=======
-      'Cache-Control': path.basename(filePath) === 'admin.html' || path.basename(filePath) === 'login.html' ? 'no-store' : 'no-cache'
->>>>>>> 28b946f56960309315aaf17a352e93c410987775
     });
     res.end(data);
   });
@@ -93,8 +89,4 @@ server.listen(PORT, () => {
   console.log(`Boss67 app: http://localhost:${PORT}`);
   console.log(`SQLite DB: ${dbPath}`);
   console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
-<<<<<<< HEAD
 });
-=======
-});
->>>>>>> 28b946f56960309315aaf17a352e93c410987775
