@@ -7,6 +7,7 @@ const { dbPath } = require('./db');
 
 const ROOT = path.join(__dirname, '..');
 const PORT = Number(process.env.PORT || 3000);
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 const mimeTypes = {
   '.html': 'text/html; charset=utf-8',
@@ -28,7 +29,16 @@ function safePath(urlPath) {
   return candidate;
 }
 
+function setSecurityHeaders(res) {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  if (IS_PRODUCTION) res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+}
+
 const server = http.createServer(async (req, res) => {
+  setSecurityHeaders(res);
   const requestUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
 
   if (requestUrl.pathname.startsWith('/api/')) {
@@ -56,13 +66,26 @@ const server = http.createServer(async (req, res) => {
     const contentType = mimeTypes[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
     res.writeHead(200, {
       'Content-Type': contentType,
-      'Cache-Control': 'no-cache'
+      'Cache-Control': path.basename(filePath) === 'admin.html' || path.basename(filePath) === 'login.html' ? 'no-store' : 'no-cache'
     });
     res.end(data);
   });
 });
 
+const shutdown = (signal) => {
+  console.log(`${signal} recebido. Encerrando Boss67 Agendamento...`);
+  server.close(() => {
+    try { require('./db').db.close(); } catch {}
+    process.exit(0);
+  });
+  setTimeout(() => process.exit(1), 10000).unref();
+};
+
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+
 server.listen(PORT, () => {
   console.log(`Boss67 app: http://localhost:${PORT}`);
   console.log(`SQLite DB: ${dbPath}`);
+  console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
 });
