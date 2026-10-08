@@ -74,6 +74,7 @@ db.exec(`
     duration INTEGER NOT NULL CHECK (duration > 0),
     customer_name TEXT NOT NULL,
     customer_whatsapp TEXT NOT NULL,
+    booking_group_id TEXT,
     status TEXT NOT NULL DEFAULT 'confirmed',
     created_at TEXT NOT NULL
   );
@@ -84,6 +85,12 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_blocks_prof_date
     ON professional_blocks (professional_id, date, start_time);
 `);
+
+const bookingColumns = db.prepare('PRAGMA table_info(bookings)').all();
+if (!bookingColumns.some((column) => column.name === 'booking_group_id')) {
+  db.exec('ALTER TABLE bookings ADD COLUMN booking_group_id TEXT');
+}
+db.exec('CREATE INDEX IF NOT EXISTS idx_bookings_group ON bookings (booking_group_id)');
 
 function seed() {
   const services = [

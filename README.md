@@ -71,6 +71,8 @@ Além da experiência do cliente, o sistema foi estruturado para evoluir para um
 ### Cliente
 
 - Seleção de serviços e profissionais
+- Agendamento de múltiplos procedimentos no mesmo pedido
+- Escolha de profissional e horário para cada procedimento
 - Opção de "Sem preferência"
 - Consulta de disponibilidade por data
 - Regras de duração e horário de funcionamento
@@ -170,6 +172,7 @@ GET  /api/services
 GET  /api/professionals
 GET  /api/availability
 POST /api/bookings
+POST /api/bookings/batch
 ```
 
 ### Administrativa
@@ -202,13 +205,13 @@ PUT  /api/admin/opening-hours/:weekday
 
 ## 🗄️ Banco de dados
 
-O projeto utiliza SQLite durante o desenvolvimento local. O caminho pode ser configurado com `BOSS67_DB_PATH`. O banco é criado automaticamente na primeira inicialização.
+O projeto utiliza SQLite durante o desenvolvimento local. O caminho pode ser configurado com `BOSS67_DB_PATH`. O banco é criado automaticamente na primeira inicialização. Agendamentos múltiplos compartilham um identificador de grupo (`booking_group_id`) para manter os procedimentos do mesmo pedido relacionados.
 
 ---
 
 ## 🔎 SEO
 
-A página pública possui title, description, meta robots, Open Graph, Twitter Card, favicon, dados estruturados locais e conteúdo direcionado para buscas em Sidrolândia-MS.
+A página pública possui title, description, meta robots, Open Graph, Twitter Card, favicon, dados estruturados locais e conteúdo direcionado para buscas em Sidrolândia-MS. O fluxo de múltiplos procedimentos mantém a mesma página pública e não altera a base de SEO local.
 
 Próximos passos:
 
@@ -222,18 +225,22 @@ Próximos passos:
 
 ## 📌 Status
 
-**V0.13 — Experiência do cliente + refinamentos**
+**V0.16 — Confirmação via WhatsApp**
 
-A V0.13 mantém o fluxo validado e refina a experiência do cliente com máscara de WhatsApp, feedback de disponibilidade sem uso de alertas invasivos e pequenos ajustes de usabilidade.
+A V0.15 permite revisar a lista de procedimentos antes da confirmação, editar individualmente o serviço de um item e remover procedimentos sem reiniciar o agendamento.
 
-A base também segue preparada para evolução para ambiente de produção, com regras de disponibilidade no backend, configuração por ambiente e autenticação administrativa.
+Ao editar um procedimento, serviço e profissional podem ser escolhidos novamente e a disponibilidade de data/horário é recalculada para manter o conjunto consistente.
 
-O próximo marco é preparar o deploy real, com infraestrutura, banco persistente/remoto, domínio, HTTPS e notificações.
-
----
+O fluxo de múltiplos procedimentos e a confirmação em lote continuam preservados.
 
 ## 👤 Autor
 
 **Ruan Rodrigues**
 
 Projeto desenvolvido para portfólio durante a transição profissional para desenvolvimento web, a partir de uma oportunidade real de aplicação comercial.
+
+### WhatsApp
+
+Após a confirmação, o cliente pode enviar uma mensagem já preenchida diretamente para o WhatsApp da Boss67, com a data, os procedimentos, os profissionais, os horários e o total do atendimento.
+
+O número fica separado em `js/config.js` para facilitar a troca da unidade sem alterar a lógica da aplicação. O número configurado nesta versão foi obtido em uma listagem pública da Boss67 e deve ser confirmado com o estabelecimento antes do uso em produção.

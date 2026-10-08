@@ -83,7 +83,7 @@
         <div class="hero-content">
           <span class="eyebrow">BOSS67 BARBEARIA</span>
           <h1>Seu próximo corte<br /><span>começa aqui.</span></h1>
-          <p>Escolha seu serviço, profissional e horário. É rápido e sem complicação.</p>
+          <p>Escolha seus procedimentos, profissionais e horários. É rápido e sem complicação.</p>
           <button class="primary-button" type="button" data-start-booking>Agendar agora <span>→</span></button>
           <div class="hero-note"><span class="hero-note-dot"></span> Agendamento rápido e sem login</div>
         </div>
@@ -95,7 +95,7 @@
           <div class="hero-card-top">AGENDE EM POUCOS PASSOS</div>
           <div class="hero-step"><span>01</span><strong>Serviço</strong></div>
           <div class="hero-step"><span>02</span><strong>Profissional</strong></div>
-          <div class="hero-step"><span>03</span><strong>Horário</strong></div>
+          <div class="hero-step"><span>03</span><strong>Procedimentos</strong></div>
           <div class="hero-card-footer">Sem login obrigatório. Você escolhe e confirma.</div>
         </div>
       </section>
@@ -113,9 +113,10 @@
 
         <section class="booking-step" data-step="1" id="servicos">
           <div class="section-heading">
+            <button class="back-link" type="button" data-action="back-to-procedures" hidden>← Voltar</button>
             <span class="eyebrow">PASSO 01</span>
             <h2>Escolha seu serviço</h2>
-            <p>Selecione o que você quer fazer hoje.</p>
+            <p>Selecione o procedimento que você quer fazer.</p>
           </div>
           <div id="service-list" class="service-grid" aria-live="polite"></div>
         </section>
@@ -124,7 +125,7 @@
           <div class="section-heading">
             <button class="back-link" type="button" data-action="back-professional">← Voltar</button>
             <span class="eyebrow">PASSO 02</span>
-            <h2>Quem vai cuidar do seu corte?</h2>
+            <h2>Quem vai cuidar do seu procedimento?</h2>
             <p>Serviço escolhido: <strong id="selected-service-name">—</strong> • <span id="selected-service-price">—</span></p>
           </div>
           <div id="professional-list" class="people-list"></div>
@@ -132,69 +133,86 @@
 
         <section class="booking-step" data-step="3" hidden>
           <div class="section-heading">
-            <button class="back-link" type="button" data-action="back-date">← Voltar</button>
+            <button class="back-link" type="button" data-action="back-from-procedure-review">← Voltar</button>
             <span class="eyebrow">PASSO 03</span>
-            <h2>Escolha o melhor dia</h2>
-            <p>Depois, selecione um dos horários livres.</p>
+            <h2>Mais algum procedimento?</h2>
+            <p>Você pode incluir outro serviço antes de escolher os horários.</p>
           </div>
-          <div id="date-list" class="date-grid"></div>
-          <div class="time-heading"><span class="eyebrow">HORÁRIOS</span><span id="selected-date-label">Selecione uma data</span></div>
-          <div id="time-list" class="time-grid"><p class="empty-state">Selecione uma data para ver os horários.</p></div>
-          <div id="booking-feedback" class="booking-feedback" role="status" aria-live="polite" hidden></div>
+          <div id="procedure-list" class="procedure-list"></div>
+          <div class="procedure-actions">
+            <button class="secondary-button" type="button" data-action="add-procedure">+ Adicionar outro procedimento</button>
+            <button class="primary-button full-width" type="button" data-action="continue-to-date">Continuar para data <span>→</span></button>
+          </div>
         </section>
 
         <section class="booking-step" data-step="4" hidden>
           <div class="section-heading">
-            <button class="back-link" type="button" data-action="back-time">← Voltar</button>
+            <button class="back-link" type="button" data-action="back-date">← Voltar</button>
             <span class="eyebrow">PASSO 04</span>
-            <h2>Quase lá.</h2>
-            <p>Informe seus dados para confirmar o horário.</p>
+            <h2>Escolha o melhor dia</h2>
+            <p>Todos os procedimentos serão agendados para a mesma data.</p>
           </div>
-          <div id="booking-summary" class="summary-card"></div>
-          <form id="customer-form" class="customer-form">
-            <label>
-              Nome
-              <input name="name" autocomplete="name" maxlength="80" placeholder="Seu nome" required />
-            </label>
-            <label>
-              WhatsApp
-              <input name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="(67) 99999-9999" required />
-            </label>
-            <button class="primary-button full-width" type="submit">Continuar <span>→</span></button>
-          </form>
+          <div id="date-list" class="date-grid"></div>
+          <div id="booking-feedback" class="booking-feedback" role="status" aria-live="polite" hidden></div>
         </section>
 
         <section class="booking-step" data-step="5" hidden>
           <div class="section-heading">
-            <span class="eyebrow">CONFIRA</span>
-            <h2>Seu agendamento</h2>
-            <p>Revise tudo antes de confirmar.</p>
+            <button class="back-link" type="button" data-action="back-time">← Voltar</button>
+            <span class="eyebrow">PASSO 05</span>
+            <h2>Escolha os horários</h2>
+            <p>Cada procedimento pode ter seu próprio profissional e horário.</p>
           </div>
-          <div class="summary-card summary-confirm">
-            <div><span>Serviço</span><strong id="confirmation-service">—</strong></div>
-            <div><span>Profissional</span><strong id="confirmation-professional">—</strong></div>
-            <div><span>Data</span><strong id="confirmation-date">—</strong></div>
-            <div><span>Horário</span><strong id="confirmation-time">—</strong></div>
-            <div><span>Cliente</span><strong id="customer-name">—</strong></div>
-            <div><span>WhatsApp</span><strong id="customer-whatsapp">—</strong></div>
+          <div class="time-heading"><span class="eyebrow">DATA</span><span id="selected-date-label">Selecione uma data</span></div>
+          <div id="time-list" class="multi-time-list"></div>
+          <div class="booking-actions">
+            <button class="primary-button full-width" id="continue-to-customer" type="button" disabled>Continuar <span>→</span></button>
           </div>
-          <button class="primary-button full-width" id="confirm-booking" type="button">Confirmar agendamento <span>✓</span></button>
-          <button class="text-button" type="button" data-action="back-customer">Alterar dados</button>
         </section>
 
+        <section class="booking-step" data-step="6" hidden>
+          <div class="section-heading">
+            <button class="back-link" type="button" data-action="back-customer">← Voltar</button>
+            <span class="eyebrow">PASSO 06</span>
+            <h2>Quase lá.</h2>
+            <p>Informe seus dados para confirmar o conjunto de horários.</p>
+          </div>
+          <div id="booking-summary" class="summary-card"></div>
+          <form id="customer-form" class="customer-form">
+            <label>Nome<input name="name" autocomplete="name" maxlength="80" placeholder="Seu nome" required /></label>
+            <label>WhatsApp<input name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="(67) 99999-9999" required /></label>
+            <button class="primary-button full-width" type="submit">Revisar agendamento <span>→</span></button>
+          </form>
+        </section>
+
+        <section class="booking-step" data-step="7" hidden>
+          <div class="section-heading">
+            <span class="eyebrow">CONFIRA</span>
+            <h2>Seu agendamento</h2>
+            <p>Revise todos os procedimentos antes de confirmar.</p>
+          </div>
+          <div class="summary-confirm review-panel">
+            <div class="review-header"><span>Procedimentos</span><span id="confirmation-date">—</span></div>
+            <div id="confirmation-items" class="review-list"></div>
+            <div class="review-total"><span>Total</span><strong id="confirmation-total">R$ 0,00</strong></div>
+            <div class="review-customer"><span>Cliente</span><strong id="customer-name">—</strong><span>WhatsApp: <strong id="customer-whatsapp">—</strong></span></div>
+          </div>
+          <button class="primary-button full-width" id="confirm-booking" type="button">Confirmar agendamento <span>✓</span></button>
+          <button class="text-button" type="button" data-action="back-review-customer">Alterar dados</button>
+        </section>
+
+        <div id="legacy-time-list" hidden></div>
         <section class="confirmation" id="confirmation" hidden>
           <div class="confirmation-mark">✓</div>
           <span class="eyebrow">AGENDAMENTO CONFIRMADO</span>
           <h2>Fechado, <span id="final-name">—</span>!</h2>
-          <p>Seu horário na Boss67 foi reservado com sucesso.</p>
-          <div class="confirmation-details">
-            <strong id="final-service">—</strong>
-            <span id="final-professional">—</span>
-            <span><span id="final-date">—</span> • <span id="final-time">—</span></span>
-            <span>WhatsApp: <span id="final-whatsapp">—</span></span>
+          <p>Seus horários na Boss67 foram reservados com sucesso.</p>
+          <div id="final-items" class="confirmation-details"></div>
+          <div class="confirmation-details confirmation-customer">
+            <span>WhatsApp: <strong id="final-whatsapp">—</strong></span>
           </div>
           <div class="confirmation-actions">
-            <button class="primary-button" id="whatsapp-button" type="button">Falar no WhatsApp <span>↗</span></button>
+            <button class="primary-button" id="whatsapp-button" type="button">Falar com a Boss67 <span>↗</span></button>
             <button class="secondary-button" id="calendar-button" type="button">Adicionar ao calendário</button>
           </div>
         </section>
@@ -222,8 +240,9 @@
       </section>
     </main>
 
-    <footer class="footer"><span>Boss67 Barbearia</span><span>Agendamento • V0.10</span></footer>
+    <footer class="footer"><span>Boss67 Barbearia</span><span>Agendamento • V0.16</span></footer>
   </div>
+  <script src="js/config.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

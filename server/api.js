@@ -246,6 +246,7 @@ function createBooking(payload) {
 
     const booking = {
       id: crypto.randomUUID(),
+      groupId: crypto.randomUUID(),
       serviceId: service.id,
       serviceName: service.name,
       priceCents: service.price_cents,
@@ -264,12 +265,120 @@ function createBooking(payload) {
     db.prepare(`
       INSERT INTO bookings (
         id, service_id, professional_id, date, start_time, duration,
-        customer_name, customer_whatsapp, status, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(booking.id, booking.serviceId, booking.professionalId, booking.date, booking.time, booking.duration, booking.customerName, booking.customerWhatsapp, booking.status, booking.createdAt);
+        customer_name, customer_whatsapp, booking_group_id, status, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(booking.id, booking.serviceId, booking.professionalId, booking.date, booking.time, booking.duration, booking.customerName, booking.customerWhatsapp, booking.groupId, booking.status, booking.createdAt);
 
     db.exec('COMMIT');
     return { status: 201, body: { booking } };
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  }
+}
+
+function createBookingBatch(payload) {
+  const items = Array.isArray(payload?.bookings) ? payload.bookings : [];
+  const name = String(payload?.customerName || '').trim();
+  const whatsappDigits = String(payload?.customerWhatsapp || '').replace(/\D/g, '');
+
+  if (!items.length) return { status: 400, body: { error: 'Selecione pelo menos um procedimento.' } };
+  if (items.length > 6) return { status: 400, body: { error: 'É possível agendar até 6 procedimentos por vez.' } };
+  if (name.length < 2 || name.length > 80) return { status: 400, body: { error: 'Informe um nome válido.' } };
+  if (!/^\d{10,13}$/.test(whatsappDigits)) return { status: 400, body: { error: 'Informe um WhatsApp válido.' } };
+
+  const whatsapp = whatsappDigits.startsWith('55') ? whatsappDigits : `55${whatsappDigits}`;
+  const dates = new Set(items.map((item) => String(item?.date || '')));
+  if (dates.size !== 1) return { status: 400, body: { error: 'Todos os procedimentos precisam estar na mesma data.' } };
+
+  const date = [...dates][0];
+  if (!isValidDate(date)) return { status: 400, body: { error: 'Data inválida.' } };
+
+  const normalized = [];
+  for (const item of items) {
+    const serviceId = String(item?.serviceId || '');
+    const professionalId = String(item?.professionalId || '');
+    const time = String(item?.time || '');
+    if (!serviceId || !professionalId || !time || !isValidTime(time)) {
+      return { status: 400, body: { error: 'Um dos procedimentos possui dados incompletos.' } };
+    }
+
+    const service = getService(serviceId);
+    if (!service) return { status: 404, body: { error: 'Um dos serviços selecionados não está mais disponível.' } };
+    if (isPastSlot(date, time)) return { status: 409, body: { error: `O horário ${time} para ${service.name} já passou.` } };
+    if (!isWithinOpening(date, time, service.duration)) {
+      return { status: 409, body: { error: `O horário ${time} para ${service.name} está fora do funcionamento.` } };
+    }
+
+    let assigned = getProfessional(professionalId);
+    if (professionalId === 'sem-preferencia') {
+      const candidates = db.prepare(`SELECT id, name, role FROM professionals WHERE active = 1 ORDER BY rowid`).all();
+      assigned = candidates.find((person) => !isBlocked(person.id, date, time, service.duration) && !isBooked(person.id, date, time, service.duration)) || null;
+      if (!assigned) return { status: 409, body: { error: `Não encontramos disponibilidade para ${service.name} às ${time}.` } };
+    } else if (!assigned) {
+      return { status: 404, body: { error: 'Um dos profissionais selecionados não está mais disponível.' } };
+    }
+
+    normalized.push({
+      service,
+      requestedProfessionalId: professionalId,
+      professional: assigned,
+      date,
+      time
+    });
+  }
+
+  for (let i = 0; i < normalized.length; i += 1) {
+    for (let j = i + 1; j < normalized.length; j += 1) {
+      const a = normalized[i];
+      const b = normalized[j];
+      if (overlaps(a.time, a.service.duration, b.time, b.service.duration)) {
+        return { status: 409, body: { error: 'Os procedimentos não podem ocupar horários sobrepostos. Escolha horários em sequência.' } };
+      }
+    }
+  }
+
+  const groupId = crypto.randomUUID();
+  const createdAt = new Date().toISOString();
+  const created = [];
+
+  db.exec('BEGIN IMMEDIATE');
+  try {
+    for (const item of normalized) {
+      if (isBlocked(item.professional.id, date, item.time, item.service.duration) || isBooked(item.professional.id, date, item.time, item.service.duration)) {
+        db.exec('ROLLBACK');
+        return { status: 409, body: { error: `O horário ${item.time} para ${item.service.name} acabou de ficar indisponível. Escolha novamente.` } };
+      }
+
+      const booking = {
+        id: crypto.randomUUID(),
+        groupId,
+        serviceId: item.service.id,
+        serviceName: item.service.name,
+        priceCents: item.service.price_cents,
+        duration: item.service.duration,
+        professionalId: item.professional.id,
+        professionalName: item.professional.name,
+        date,
+        time: item.time,
+        customerName: name,
+        customerWhatsapp: whatsapp,
+        status: 'confirmed',
+        createdAt
+      };
+
+      db.prepare(`
+        INSERT INTO bookings (
+          id, service_id, professional_id, date, start_time, duration,
+          customer_name, customer_whatsapp, booking_group_id, status, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(booking.id, booking.serviceId, booking.professionalId, booking.date, booking.time, booking.duration, booking.customerName, booking.customerWhatsapp, booking.groupId, booking.status, booking.createdAt);
+
+      created.push(booking);
+    }
+
+    db.exec('COMMIT');
+    return { status: 201, body: { groupId, bookings: created } };
   } catch (error) {
     db.exec('ROLLBACK');
     throw error;
@@ -289,7 +398,7 @@ function getAdminBookings(searchParams) {
     SELECT b.id, b.service_id AS serviceId, s.name AS serviceName, s.price_cents AS priceCents,
       b.professional_id AS professionalId, p.name AS professionalName, p.initials AS professionalInitials,
       b.date, b.start_time AS startTime, b.duration, b.customer_name AS customerName,
-      b.customer_whatsapp AS customerWhatsapp, b.status, b.created_at AS createdAt
+      b.customer_whatsapp AS customerWhatsapp, b.booking_group_id AS groupId, b.status, b.created_at AS createdAt
     FROM bookings b
     JOIN services s ON s.id = b.service_id
     JOIN professionals p ON p.id = b.professional_id
@@ -533,6 +642,11 @@ async function handleApi(req, res, pathname, searchParams) {
     }
 
     if (req.method === 'GET' && pathname === '/api/availability') { const result = getAvailability(searchParams); return sendJson(res, result.status, result.body); }
+
+    if (req.method === 'POST' && pathname === '/api/bookings/batch') {
+      const result = createBookingBatch(await parseJsonBody(req));
+      return sendJson(res, result.status, result.body);
+    }
 
     if (req.method === 'POST' && pathname === '/api/bookings') {
       const result = createBooking(await parseJsonBody(req));
