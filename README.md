@@ -225,7 +225,7 @@ Próximos passos:
 
 ## 📌 Status
 
-**V0.16 — Confirmação via WhatsApp**
+**V0.16.2 — Refinamento dos controles de procedimentos**
 
 A V0.15 permite revisar a lista de procedimentos antes da confirmação, editar individualmente o serviço de um item e remover procedimentos sem reiniciar o agendamento.
 
