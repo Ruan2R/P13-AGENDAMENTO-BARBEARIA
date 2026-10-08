@@ -24,8 +24,16 @@ function hashSessionToken(token) {
 }
 
 function ensureAdminUser() {
-  const email = String(process.env.BOSS67_ADMIN_EMAIL || DEFAULT_EMAIL).trim().toLowerCase();
-  const password = String(process.env.BOSS67_ADMIN_PASSWORD || DEFAULT_PASSWORD);
+  const isProduction = process.env.NODE_ENV === 'production';
+  const configuredEmail = String(process.env.BOSS67_ADMIN_EMAIL || '').trim().toLowerCase();
+  const configuredPassword = String(process.env.BOSS67_ADMIN_PASSWORD || '');
+
+  if (isProduction && (!configuredEmail || !configuredPassword)) {
+    throw new Error('Em produção, BOSS67_ADMIN_EMAIL e BOSS67_ADMIN_PASSWORD são obrigatórios.');
+  }
+
+  const email = configuredEmail || DEFAULT_EMAIL;
+  const password = configuredPassword || DEFAULT_PASSWORD;
   const existing = db.prepare('SELECT id FROM admin_users WHERE email = ?').get(email);
   if (!existing) {
     db.prepare(`
@@ -74,11 +82,13 @@ function createSession(userId) {
 
 function setSessionCookie(res, token, expiresAt) {
   const maxAge = Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000));
-  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${encodeURIComponent(token)}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Lax`);
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${encodeURIComponent(token)}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Lax${secure}`);
 }
 
 function clearSessionCookie(res) {
-  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax`);
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax${secure}`);
 }
 
 function login(req, res, payload) {
