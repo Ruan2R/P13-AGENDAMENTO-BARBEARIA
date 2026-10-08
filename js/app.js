@@ -3,6 +3,7 @@ const bookingFlow = document.querySelector('#booking-flow');
 const professionalList = document.querySelector('#professional-list');
 const dateList = document.querySelector('#date-list');
 const timeList = document.querySelector('#time-list');
+const bookingFeedback = document.querySelector('#booking-feedback');
 const summary = document.querySelector('#booking-summary');
 const progressItems = [...document.querySelectorAll('.progress-item')];
 const heroButtons = [...document.querySelectorAll('[data-start-booking]')];
@@ -34,6 +35,31 @@ let services = [];
 let professionals = [];
 
 const API_BASE_URL = window.BOSS67_API_URL || (window.location.port === '3000' ? '' : 'http://localhost:3000');
+function showBookingFeedback(message, type = 'info') {
+  if (!bookingFeedback) return;
+  bookingFeedback.textContent = message;
+  bookingFeedback.className = `booking-feedback ${type}`;
+  bookingFeedback.hidden = false;
+}
+
+function clearBookingFeedback() {
+  if (!bookingFeedback) return;
+  bookingFeedback.textContent = '';
+  bookingFeedback.className = 'booking-feedback';
+  bookingFeedback.hidden = true;
+}
+
+function formatWhatsAppInput(value) {
+  let digits = String(value || '').replace(/\D/g, '');
+  if (digits.startsWith('55') && digits.length > 11) digits = digits.slice(2);
+  digits = digits.slice(0, 11);
+
+  if (digits.length <= 2) return digits ? `(${digits}` : '';
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
 
 const api = {
   async get(path) {
@@ -224,6 +250,7 @@ async function renderTimes(date) {
   try {
     const availability = await fetchAvailability(date);
     const slots = availability.slots;
+    clearBookingFeedback();
     if (!slots.length) {
       timeList.innerHTML = '<p class="empty-state">Nenhum horário disponível nesta data para esta combinação.</p>';
       return;
@@ -239,7 +266,8 @@ async function renderTimes(date) {
       </button>
     `).join('');
   } catch (error) {
-    timeList.innerHTML = `<p class="empty-state">${error.message}</p>`;
+    timeList.innerHTML = `<p class="empty-state">${escapeHtml(error.message)}</p>`;
+    showBookingFeedback(error.message, 'error');
   }
 }
 
@@ -340,6 +368,7 @@ serviceList?.addEventListener('click', (event) => {
   state.selectedSlot = null;
   state.availabilityByDate.clear();
   state.confirmed = false;
+  clearBookingFeedback();
 
   document.querySelector('#selected-service-name').textContent = state.service.name;
   document.querySelector('#selected-service-price').textContent = formatCurrency(state.service.price);
@@ -411,6 +440,7 @@ document.querySelector('#customer-form')?.addEventListener('submit', (event) => 
   }
   state.customer.name = form.elements.name.value.trim();
   state.customer.whatsapp = form.elements.whatsapp.value.trim();
+  clearBookingFeedback();
   updateReview();
   setStep(5);
 });
@@ -451,15 +481,17 @@ document.querySelector('#confirm-booking')?.addEventListener('click', async (eve
     document.querySelector('.progress-item[data-progress="4"]')?.classList.add('is-done');
     document.querySelector('#confirmation')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (error) {
-    alert(error.message);
     if (error.status === 409) {
       state.time = null;
       state.assignedProfessional = null;
       state.selectedSlot = null;
       state.availabilityByDate.delete(dateKey(state.date));
+      showBookingFeedback('Esse horário acabou de ser ocupado. Atualizamos a disponibilidade para você escolher outro.', 'error');
       setStep(3);
       await renderDates();
       await renderTimes(state.date);
+    } else {
+      showBookingFeedback(error.message || 'Não foi possível confirmar o agendamento. Tente novamente.', 'error');
     }
   } finally {
     button.disabled = false;
@@ -469,5 +501,10 @@ document.querySelector('#confirm-booking')?.addEventListener('click', async (eve
 
 document.querySelector('#calendar-button')?.addEventListener('click', downloadCalendarEvent);
 document.querySelector('#whatsapp-button')?.addEventListener('click', openWhatsApp);
+
+const whatsappInput = document.querySelector('#customer-form input[name="whatsapp"]');
+whatsappInput?.addEventListener('input', () => {
+  whatsappInput.value = formatWhatsAppInput(whatsappInput.value);
+});
 
 loadInitialData();

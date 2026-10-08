@@ -222,13 +222,13 @@ Próximos passos:
 
 ## 📌 Status
 
-**V0.12.1 — Correção de merge + preparação de repositório**
+**V0.13 — Experiência do cliente + refinamentos**
 
-A V0.12.1 mantém as regras de disponibilidade e validações da V0.12 e corrige a sincronização do repositório após o merge, removendo marcadores de conflito dos arquivos de configuração e documentação.
+A V0.13 mantém o fluxo validado e refina a experiência do cliente com máscara de WhatsApp, feedback de disponibilidade sem uso de alertas invasivos e pequenos ajustes de usabilidade.
 
-A base também já está preparada para configuração por ambiente, cookies seguros em produção, caminho de banco configurável e cabeçalhos básicos de segurança.
+A base também segue preparada para evolução para ambiente de produção, com regras de disponibilidade no backend, configuração por ambiente e autenticação administrativa.
 
-O próximo marco é preparar o ambiente de produção, com banco remoto/persistente, deploy, domínio, HTTPS e notificações reais.
+O próximo marco é preparar o deploy real, com infraestrutura, banco persistente/remoto, domínio, HTTPS e notificações.
 
 ---
 
