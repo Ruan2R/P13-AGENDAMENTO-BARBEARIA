@@ -172,6 +172,7 @@ P13-AGENDAMENTO-BARBEARIA/
 │   └── server.js
 ├── data/
 │   └── boss67.sqlite
+├── .env.example
 ├── package.json
 ├── start.bat
 └── README.md
@@ -274,6 +275,34 @@ O banco armazena informações relacionadas a:
 
 ---
 
+## 🚀 Preparação para produção
+
+### Variáveis de ambiente
+
+Exemplo em `.env.example`:
+
+```text
+NODE_ENV=production
+PORT=3000
+BOSS67_ADMIN_EMAIL=seu-email
+BOSS67_ADMIN_PASSWORD=sua-senha-forte
+BOSS67_DB_PATH=/caminho/seguro/boss67.sqlite
+```
+
+Em produção, `BOSS67_ADMIN_EMAIL` e `BOSS67_ADMIN_PASSWORD` são obrigatórios. A sessão administrativa recebe `Secure` quando `NODE_ENV=production`.
+
+O caminho do banco pode ser alterado com `BOSS67_DB_PATH`, permitindo separar dados persistentes da pasta do código.
+
+### Checklist antes do deploy
+
+- definir credenciais administrativas por ambiente;
+- usar HTTPS;
+- configurar armazenamento persistente para o banco ou migrar para banco remoto;
+- definir backups;
+- revisar logs e monitoramento;
+- configurar domínio e URL canônica;
+- validar integrações externas.
+
 ## 🔎 SEO
 
 A página pública já possui uma base de SEO local, incluindo:
@@ -300,11 +329,13 @@ A página pública já possui uma base de SEO local, incluindo:
 
 ## 📌 Status do projeto
 
-**V0.10 — Mobile + SEO**
+**V0.11 — Preparação para produção**
 
 O MVP local já possui fluxo completo de agendamento, backend, banco de dados, painel administrativo e autenticação.
 
-O próximo estágio é preparar a aplicação para ambiente real, incluindo infraestrutura de produção, banco remoto, HTTPS, notificações e integração com serviços externos.
+A V0.11 prepara a aplicação para um ambiente real, sem alterar o fluxo validado do cliente. Entraram configurações por variáveis de ambiente, banco SQLite com caminho configurável, cookies seguros em produção, cabeçalhos de segurança e encerramento controlado do servidor.
+
+O próximo estágio é publicar a API, migrar para banco remoto, configurar domínio/HTTPS e integrar notificações e serviços externos.
 
 ---
 
