@@ -1,7 +1,14 @@
+const fs = require('node:fs');
 const path = require('node:path');
 const { DatabaseSync } = require('node:sqlite');
 
-const dbPath = path.join(__dirname, '..', 'data', 'boss67.sqlite');
+const configuredPath = process.env.BOSS67_DB_PATH
+  ? path.resolve(process.env.BOSS67_DB_PATH)
+  : path.join(__dirname, '..', 'data', 'boss67.sqlite');
+
+fs.mkdirSync(path.dirname(configuredPath), { recursive: true });
+
+const dbPath = configuredPath;
 const db = new DatabaseSync(dbPath);
 
 db.exec(`
